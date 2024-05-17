@@ -1,9 +1,16 @@
 import pygame
 
+from models import GameObject
+from utils import load_sprite
+
+
 class Vector:
     def __init__(self):
         self._init_pygame()
         self.screen = pygame.display.set_mode((800, 600))
+        self.background = load_sprite("space", False)
+        self.spaceship = GameObject((400, 300), load_sprite("spaceship"), (0, 0))
+        self.asteroid = GameObject((400, 300), load_sprite("asteroid"), (1,0))
 
     def main_loop(self):
         while True:
@@ -16,11 +23,18 @@ class Vector:
         pygame.display.set_caption("Vector")
 
     def _handle_input(self):
-        pass
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                quit()
 
     def _process_game_logic(self):
-        pass
+        self.spaceship.move()
+        self.asteroid.move()
 
     def _draw(self):
-        self.screen.fill((0, 0, 255))
+        self.screen.blit(self.background, (0, 0))
+        self.spaceship.draw(self.screen)
+        self.asteroid.draw(self.screen)
         pygame.display.flip()
+        #print("Collides: ", self.spaceship.collides_with(self.asteroid))
