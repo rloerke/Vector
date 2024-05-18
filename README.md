@@ -1,8 +1,8 @@
 # Vector
 An asteroids game
 
-##Author
+## Author
 Ray Loerke
 
-##Sources
+## Sources
 Initial setup from https://realpython.com/asteroids-game-python/
