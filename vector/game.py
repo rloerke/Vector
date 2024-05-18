@@ -1,16 +1,31 @@
 import pygame
 
-from models import Spaceship
-from utils import load_sprite
+from models import Spaceship, Asteroid
+from utils import load_sprite, get_random_position
 
 
 class Vector:
+    MIN_ASTEROID_DISTANCE = 250
+
     def __init__(self):
         self._init_pygame()
         self.screen = pygame.display.set_mode((800, 600))
         self.background = load_sprite("space", False)
         self.clock = pygame.time.Clock()
+
         self.spaceship = Spaceship((400, 300))
+        self.asteroids = []
+        
+        for _ in range(6):
+            while True:
+                position = get_random_position(self.screen)
+                if (
+                    position.distance_to(self.spaceship.position) >
+                    self.MIN_ASTEROID_DISTANCE
+                ):
+                    break
+
+            self.asteroids.append(Asteroid(position))
 
     def main_loop(self):
         while True:
@@ -37,14 +52,16 @@ class Vector:
         if is_key_pressed[pygame.K_UP]:
             self.spaceship.accelerate()
 
+    def _get_game_objects(self):
+        return [*self.asteroids, self.spaceship]
+
     def _process_game_logic(self):
-        self.spaceship.move(self.screen)
-        #self.asteroid.move()
+        for game_object in self._get_game_objects():
+            game_object.move(self.screen)
 
     def _draw(self):
         self.screen.blit(self.background, (0, 0))
-        self.spaceship.draw(self.screen)
-        #self.asteroid.draw(self.screen)
+        for game_object in self._get_game_objects():
+            game_object.draw(self.screen)
         pygame.display.flip()
         self.clock.tick(60)
-        #print("Collides: ", self.spaceship.collides_with(self.asteroid))
