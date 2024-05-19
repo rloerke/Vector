@@ -16,12 +16,14 @@ def load_sprite(name, with_alpha=True):
         return loaded_sprite.convert()
 
 
+# When objects leave the screen, have them come back on the opposite side
 def wrap_position(position, surface):
     x, y = position
     w, h = surface.get_size()
     return Vector2(x % w, y % h)
 
 
+# Function for generating a random location on the screen
 def get_random_position(surface):
     return Vector2(
         random.randrange(surface.get_width()),
@@ -29,6 +31,7 @@ def get_random_position(surface):
     )
 
 
+# Generates random speed and direction
 def get_random_velocity(min_speed, max_speed):
     speed = random.randint(min_speed, max_speed)
     angle = random.randrange(0, 360)
@@ -40,8 +43,12 @@ def load_sound(name):
     return Sound(path)
 
 
-def print_text(surface, text, font, color=Color("tomato")):
+# A function for drawing text on the screen
+def print_text(surface, text, font, position, color=Color("tomato")):
     text_surface = font.render(text, True, color)
     rect = text_surface.get_rect()
-    rect.center = Vector2(surface.get_size()) / 2
+    if position == "center":
+        rect.center = Vector2(surface.get_size()) / 2
+    elif position == "top":
+        rect.center = (surface.get_width() / 2, 20)
     surface.blit(text_surface, rect)

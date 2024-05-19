@@ -5,6 +5,7 @@ from utils import load_sprite, get_random_position, print_text
 
 
 class Vector:
+    # How close asteroids can spawn to your ship
     MIN_ASTEROID_DISTANCE = 250
 
     def __init__(self):
@@ -12,13 +13,18 @@ class Vector:
         self.screen = pygame.display.set_mode((800, 600))
         self.background = load_sprite("space", False)
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font(None, 64)
+
+        # These will be used to display text on the screen
+        self.font_big = pygame.font.Font(None, 64)
+        self.font_small = pygame.font.Font(None, 32)
         self.message = ""
+        self.score = 0
 
         self.asteroids = []
         self.bullets = []
         self.spaceship = Spaceship((400, 300), self.bullets.append)
 
+        # Generate asteroids at random location, far enough from the spaceship
         for _ in range(6):
             while True:
                 position = get_random_position(self.screen)
@@ -41,10 +47,14 @@ class Vector:
         pygame.display.set_caption("Vector")
 
     def _handle_input(self):
+
+        # Quit the game if escape or the x is pressed
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (
                     event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 quit()
+
+            # Fire bullets if space is pressed
             elif (
                 self.spaceship and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE
             ):
@@ -52,6 +62,7 @@ class Vector:
 
         is_key_pressed = pygame.key.get_pressed()
 
+        # Turn the ship if right or left is pressed, accelerate if up
         if self.spaceship:
             if is_key_pressed[pygame.K_RIGHT]:
                 self.spaceship.rotate(clockwise=True)
@@ -60,6 +71,7 @@ class Vector:
             if is_key_pressed[pygame.K_UP]:
                 self.spaceship.accelerate()
 
+    # Returns a list of objects in the game
     def _get_game_objects(self):
         game_objects = [*self.asteroids, *self.bullets]
 
@@ -68,9 +80,12 @@ class Vector:
         return game_objects
 
     def _process_game_logic(self):
+
+        # Move current game objects
         for game_object in self._get_game_objects():
             game_object.move(self.screen)
 
+        # Game ends if ship hits an asteroid
         if self.spaceship:
             for asteroid in self.asteroids:
                 if asteroid.collides_with(self.spaceship):
@@ -78,14 +93,18 @@ class Vector:
                     self.message = "You Lost!"
                     break
 
+        # Handles asteroids splitting if hit with a bullet
         for bullet in self.bullets[:]:
             for asteroid in self.asteroids[:]:
                 if asteroid.collides_with(bullet):
                     self.asteroids.remove(asteroid)
                     self.bullets.remove(bullet)
                     asteroid.split()
+                    if self.spaceship:
+                        self.score += 100
                     break
 
+        # Remove bullets that have left the screen
         for bullet in self.bullets[:]:
             if not self.screen.get_rect().collidepoint(bullet.position):
                 self.bullets.remove(bullet)
@@ -94,12 +113,17 @@ class Vector:
             self.message = "You Won!"
 
     def _draw(self):
+
+        # Draw the background and all current game objects
         self.screen.blit(self.background, (0, 0))
         for game_object in self._get_game_objects():
             game_object.draw(self.screen)
 
+        # If a message exists, draw it
         if self.message:
-            print_text(self.screen, self.message, self.font)
-            
+            print_text(self.screen, self.message, self.font_big, "center")
+
+        print_text(self.screen, "Score: " + str(self.score), self.font_small, "top", "ghostwhite")
+
         pygame.display.flip()
         self.clock.tick(60)
