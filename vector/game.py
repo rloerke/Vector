@@ -2,7 +2,7 @@ import pygame
 import time
 
 from models import Spaceship, Asteroid
-from utils import load_sprite, get_random_position, print_text, load_sound, read_file
+from utils import load_sprite, get_random_position, print_text, load_sound, read_file, score_update, write_file
 
 
 class Vector:
@@ -55,8 +55,8 @@ class Vector:
             self._handle_input()
             self._process_game_logic()
             self._draw()
-            if not self.spaceship:
-                time.sleep(3)
+            if not self.spaceship or (self.spaceship and not self.asteroids):
+                time.sleep(4)
                 break
 
     def _init_pygame(self):
@@ -111,6 +111,8 @@ class Vector:
                     self.spaceship = None
                     self.message = "You Lost!"
                     self.ship_explosion.play()
+                    self.h_scores = score_update(self.h_scores, self.score)
+                    write_file("options", self.h_scores)
                     break
 
         # Handles asteroids splitting if hit with a bullet
@@ -132,6 +134,8 @@ class Vector:
 
         if not self.asteroids and self.spaceship:
             self.message = "You Won!"
+            self.h_scores = score_update(self.h_scores, self.score)
+            write_file("options", self.h_scores)
 
     def _draw(self):
 
@@ -146,10 +150,10 @@ class Vector:
 
         print_text(self.screen, "Score: " + str(self.score), self.font_small, "top", "ghostwhite")
 
-        if not self.spaceship:
+        if not self.spaceship or (self.spaceship and not self.asteroids):
             print_text(self.screen, "Highscores:", self.font_medium, "scoreboard", "ghostwhite")
             for x in range(5):
-                print_text(self.screen, (str(x+1) + ": " + self.h_scores[x]), self.font_small, ("score_" + str(x+1)), "ghostwhite")
+                print_text(self.screen, (str(x+1) + ": " + str(self.h_scores[x])), self.font_small, ("score_" + str(x+1)), "ghostwhite")
 
         pygame.display.flip()
         self.clock.tick(60)

@@ -75,7 +75,35 @@ def approach_zero(x, deceleration):
 
 
 def read_file(name):
-    with open(name + ".txt") as f:
+    with open(name + ".txt", 'r') as f:
         text = f.readlines()
-    print(text)
     return text
+
+
+def score_update(scores, score):
+    new_scores = []
+    changed = False
+    for s in scores:
+        s = int(s)
+        if score > s:
+            if not changed:
+                new_scores.append(score)
+                new_scores.append(s)
+                changed = True
+            else:
+                new_scores.append(s)
+        else:
+            new_scores.append(s)
+    new_scores = new_scores[:5]
+    return new_scores
+
+
+def write_file(name, scores):
+    with open(name + ".txt", 'r') as f:
+        text = f.readlines()
+
+    for x in range(1, 6):
+        text[x] = ("score_" + str(x) + " = " + str(scores[x - 1]) + "\n")
+
+    with open(name + ".txt", 'w') as f:
+        f.writelines(text)
