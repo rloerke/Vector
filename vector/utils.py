@@ -52,3 +52,14 @@ def print_text(surface, text, font, position, color=Color("tomato")):
     elif position == "top":
         rect.center = (surface.get_width() / 2, 20)
     surface.blit(text_surface, rect)
+
+
+def approach_zero(x, deceleration):
+    if abs(x) < deceleration:
+        x = 0
+    else:
+        if x > 0:
+            x -= deceleration
+        else:
+            x += deceleration
+    return x

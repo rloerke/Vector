@@ -1,7 +1,8 @@
 import pygame
+import time
 
 from models import Spaceship, Asteroid
-from utils import load_sprite, get_random_position, print_text
+from utils import load_sprite, get_random_position, print_text, load_sound
 
 
 class Vector:
@@ -19,6 +20,11 @@ class Vector:
         self.font_small = pygame.font.Font(None, 32)
         self.message = ""
         self.score = 0
+
+        self.ship_explosion = load_sound("ship_explosion")
+        self.ship_explosion.set_volume(0.1)
+        self.rock_break = load_sound("rock_break")
+        self.rock_break.set_volume(0.1)
 
         self.asteroids = []
         self.bullets = []
@@ -41,6 +47,9 @@ class Vector:
             self._handle_input()
             self._process_game_logic()
             self._draw()
+            if not self.spaceship:
+                time.sleep(3)
+                break
 
     def _init_pygame(self):
         pygame.init()
@@ -70,6 +79,8 @@ class Vector:
                 self.spaceship.rotate(clockwise=False)
             if is_key_pressed[pygame.K_UP]:
                 self.spaceship.accelerate()
+            else:
+                self.spaceship.decelerate()
 
     # Returns a list of objects in the game
     def _get_game_objects(self):
@@ -91,6 +102,7 @@ class Vector:
                 if asteroid.collides_with(self.spaceship):
                     self.spaceship = None
                     self.message = "You Lost!"
+                    self.ship_explosion.play()
                     break
 
         # Handles asteroids splitting if hit with a bullet
@@ -99,6 +111,7 @@ class Vector:
                 if asteroid.collides_with(bullet):
                     self.asteroids.remove(asteroid)
                     self.bullets.remove(bullet)
+                    self.rock_break.play()
                     asteroid.split()
                     if self.spaceship:
                         self.score += 100

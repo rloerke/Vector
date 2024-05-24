@@ -1,7 +1,7 @@
 from pygame.math import Vector2
 from pygame.transform import rotozoom
 
-from utils import load_sprite, wrap_position, get_random_velocity, load_sound
+from utils import load_sprite, wrap_position, get_random_velocity, load_sound, approach_zero
 
 UP = Vector2(0, -1)
 
@@ -61,6 +61,13 @@ class Spaceship(GameObject):
         x = self.velocity + (self.direction * self.ACCELERATION)
         if x.length() < self.MAX_SPEED:
             self.velocity += self.direction * self.ACCELERATION
+
+    def decelerate(self):
+        deceleration = self.ACCELERATION * .3
+        x, y = self.velocity
+        x = approach_zero(x, deceleration)
+        y = approach_zero(y, deceleration)
+        self.velocity = (x, y)
 
     def shoot(self):
         bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
