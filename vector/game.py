@@ -2,7 +2,7 @@ import pygame
 import time
 
 from models import Spaceship, Asteroid
-from utils import load_sprite, get_random_position, print_text, load_sound
+from utils import load_sprite, get_random_position, print_text, load_sound, read_file
 
 
 class Vector:
@@ -17,14 +17,22 @@ class Vector:
 
         # These will be used to display text on the screen
         self.font_big = pygame.font.Font(None, 64)
+        self.font_medium = pygame.font.Font(None, 48)
         self.font_small = pygame.font.Font(None, 32)
         self.message = ""
         self.score = 0
 
+        options = read_file("options")
+        self.volume = int(options[0][9:])
+        self.volume = self.volume / 100
+        self.h_scores = []
+        for line in options[1:]:
+            self.h_scores.append(line[10:-1])
+
         self.ship_explosion = load_sound("ship_explosion")
-        self.ship_explosion.set_volume(0.1)
+        self.ship_explosion.set_volume(self.volume)
         self.rock_break = load_sound("rock_break")
-        self.rock_break.set_volume(0.1)
+        self.rock_break.set_volume(self.volume)
 
         self.asteroids = []
         self.bullets = []
@@ -137,6 +145,11 @@ class Vector:
             print_text(self.screen, self.message, self.font_big, "center")
 
         print_text(self.screen, "Score: " + str(self.score), self.font_small, "top", "ghostwhite")
+
+        if not self.spaceship:
+            print_text(self.screen, "Highscores:", self.font_medium, "scoreboard", "ghostwhite")
+            for x in range(5):
+                print_text(self.screen, (str(x+1) + ": " + self.h_scores[x]), self.font_small, ("score_" + str(x+1)), "ghostwhite")
 
         pygame.display.flip()
         self.clock.tick(60)

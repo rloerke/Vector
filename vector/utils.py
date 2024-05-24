@@ -47,10 +47,19 @@ def load_sound(name):
 def print_text(surface, text, font, position, color=Color("tomato")):
     text_surface = font.render(text, True, color)
     rect = text_surface.get_rect()
+    x = 0
+    if position[:6] == "score_":
+        x = int(position[6:])
     if position == "center":
         rect.center = Vector2(surface.get_size()) / 2
     elif position == "top":
         rect.center = (surface.get_width() / 2, 20)
+    elif position == "scoreboard":
+        rect.center = Vector2(surface.get_size()) / 2
+        rect.center += Vector2(0, 50)
+    elif position == ("score_" + str(x)):
+        rect.center = Vector2(surface.get_size()) / 2
+        rect.center += Vector2(0, 60 + 20 * x)
     surface.blit(text_surface, rect)
 
 
@@ -63,3 +72,10 @@ def approach_zero(x, deceleration):
         else:
             x += deceleration
     return x
+
+
+def read_file(name):
+    with open(name + ".txt") as f:
+        text = f.readlines()
+    print(text)
+    return text
