@@ -50,6 +50,7 @@ def print_text(surface, text, font, position, color=Color("tomato")):
     x = 0
     if position[:6] == "score_":
         x = int(position[6:])
+
     if position == "center":
         rect.center = Vector2(surface.get_size()) / 2
     elif position == "top":
@@ -60,6 +61,8 @@ def print_text(surface, text, font, position, color=Color("tomato")):
     elif position == ("score_" + str(x)):
         rect.center = Vector2(surface.get_size()) / 2
         rect.center += Vector2(0, 60 + 20 * x)
+    elif position == "volume":
+        rect.center = (surface.get_width() / 2, 50)
     surface.blit(text_surface, rect)
 
 
@@ -106,4 +109,14 @@ def write_file(name, scores):
         text[x] = ("score_" + str(x) + " = " + str(scores[x - 1]) + "\n")
 
     with open(name + ".txt", 'w') as f:
+        f.writelines(text)
+
+
+def write_volume(volume):
+    with open("options.txt", 'r') as f:
+        text = f.readlines()
+
+    text[0] = ("volume = " + str(volume) + "\n")
+
+    with open("options.txt", 'w') as f:
         f.writelines(text)

@@ -69,10 +69,14 @@ class Spaceship(GameObject):
         y = approach_zero(y, deceleration)
         self.velocity = (x, y)
 
-    def shoot(self):
+    def shoot(self, volume):
         bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
         bullet = Bullet(self.position, bullet_velocity)
         self.create_bullet_callback(bullet)
+        if volume > 0:
+            self.laser_sound.set_volume(volume / 100)
+        else:
+            self.laser_sound.set_volume(0)
         self.laser_sound.play()
 
     def draw(self, surface):
