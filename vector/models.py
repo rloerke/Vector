@@ -17,7 +17,7 @@ class GameObject:
         self.velocity = Vector2(velocity)
 
     # Draws the object based on its size and the size of the screen
-    def draw(self, surface):
+    def draw(self, surface, s_type):
         blit_position = self.position - Vector2(self.radius)
         surface.blit(self.sprite, blit_position)
 
@@ -35,18 +35,20 @@ class Spaceship(GameObject):
 
     # Sets some default values for the spaceship class
     MANEUVERABILITY = 3
-    ACCELERATION = 0.25
-    BULLET_SPEED = 3
     MAX_SPEED = 6
 
     def __init__(self, position, create_bullet_callback):
+
+        self.acceleration = 0.25
+        self.bullet_speed = 3
+        self.bullet_amount = 1
 
         # Allows you to pass bullet objects back to the game.py file
         self.create_bullet_callback = create_bullet_callback
 
         # Setup sound for firing a bullet
         self.laser_sound = load_sound("laser")
-        self.laser_sound.set_volume(0.1)
+        self.sprite_shield = load_sprite("spaceship_shielded")
 
         self.direction = Vector2(UP)
         super().__init__(position, load_sprite("spaceship"), Vector2(0))
@@ -58,30 +60,45 @@ class Spaceship(GameObject):
 
     # If the ship is not at the max speed, accelerate
     def accelerate(self):
-        x = self.velocity + (self.direction * self.ACCELERATION)
+        x = self.velocity + (self.direction * self.acceleration)
         if x.length() < self.MAX_SPEED:
-            self.velocity += self.direction * self.ACCELERATION
+            self.velocity += self.direction * self.acceleration
 
     def decelerate(self):
-        deceleration = self.ACCELERATION * .3
+        deceleration = self.acceleration * .3
         x, y = self.velocity
         x = approach_zero(x, deceleration)
         y = approach_zero(y, deceleration)
         self.velocity = (x, y)
 
     def shoot(self, volume):
-        bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
+        bullet_velocity = self.direction * self.bullet_speed + self.velocity
         bullet = Bullet(self.position, bullet_velocity)
         self.create_bullet_callback(bullet)
+
+        if self.bullet_amount == 3:
+            dir1 = self.direction.rotate(self.MANEUVERABILITY * 3)
+            bullet_velocity = dir1 * self.bullet_speed + self.velocity
+            bullet = Bullet(self.position, bullet_velocity)
+            self.create_bullet_callback(bullet)
+
+            dir2 = self.direction.rotate(-self.MANEUVERABILITY * 3)
+            bullet_velocity = dir2 * self.bullet_speed + self.velocity
+            bullet = Bullet(self.position, bullet_velocity)
+            self.create_bullet_callback(bullet)
+
         if volume > 0:
             self.laser_sound.set_volume(volume / 100)
         else:
             self.laser_sound.set_volume(0)
         self.laser_sound.play()
 
-    def draw(self, surface):
+    def draw(self, surface, s_type):
         angle = self.direction.angle_to(UP)
-        rotated_surface = rotozoom(self.sprite, angle, 1.0)
+        if s_type == 1:
+            rotated_surface = rotozoom(self.sprite, angle, 1.0)
+        else:
+            rotated_surface = rotozoom(self.sprite_shield, angle, 1.0)
         rotated_surface_size = Vector2(rotated_surface.get_size())
         blit_position = self.position - rotated_surface_size * 0.5
         surface.blit(rotated_surface, blit_position)
@@ -114,3 +131,36 @@ class Bullet(GameObject):
     # Overload the move class to stop bullets from wrapping around the screen
     def move(self, surface):
         self.position = self.position + self.velocity
+
+
+class Powerup(GameObject):
+    def __init__(self, position, p_type):
+        self.powerup_sound = load_sound("powerup")
+        super().__init__(position, load_sprite(p_type), Vector2(0))
+
+    def pickup_sound(self, volume):
+        if volume > 0:
+            self.powerup_sound.set_volume(volume / 100)
+        else:
+            self.powerup_sound.set_volume(0)
+        self.powerup_sound.play()
+
+
+class Shield(Powerup):
+    def __init__(self, position):
+        super().__init__(position, "powerup_shield")
+
+
+class ShipSpeed(Powerup):
+    def __init__(self, position):
+        super().__init__(position, "powerup_ship_speed")
+
+
+class BulletSpeed(Powerup):
+    def __init__(self, position):
+        super().__init__(position, "powerup_bullet_speed")
+
+
+class MultiShot(Powerup):
+    def __init__(self, position):
+        super().__init__(position, "powerup_multi_shot")
