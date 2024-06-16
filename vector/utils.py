@@ -5,7 +5,10 @@ from pygame.math import Vector2
 from pygame.mixer import Sound
 from pygame import Color
 
+# A file for helper functions
 
+
+# Helper function to load sprites from the assets folder
 def load_sprite(name, with_alpha=True):
     path = f"assets/sprites/{name}.png"
     loaded_sprite = load(path)
@@ -38,6 +41,7 @@ def get_random_velocity(min_speed, max_speed):
     return Vector2(speed, 0).rotate(angle)
 
 
+# Helper function for loadign sounds from the assets folder
 def load_sound(name):
     path = f'assets/sounds/{name}.wav'
     return Sound(path)
@@ -47,10 +51,13 @@ def load_sound(name):
 def print_text(surface, text, font, position, color=Color("tomato")):
     text_surface = font.render(text, True, color)
     rect = text_surface.get_rect()
+
+    # Collect the position of the high score
     x = 0
     if position[:6] == "score_":
         x = int(position[6:])
 
+    # Preset positions used to display different types of text
     if position == "center":
         rect.center = Vector2(surface.get_size()) / 2
     elif position == "top":
@@ -66,6 +73,7 @@ def print_text(surface, text, font, position, color=Color("tomato")):
     surface.blit(text_surface, rect)
 
 
+# A helper function to help deceleration stop at 0
 def approach_zero(x, deceleration):
     if abs(x) < deceleration:
         x = 0
@@ -77,12 +85,14 @@ def approach_zero(x, deceleration):
     return x
 
 
+# A helper function to read the options file
 def read_file(name):
     with open(name + ".txt", 'r') as f:
         text = f.readlines()
     return text
 
 
+# A helper function to update the high scores
 def score_update(scores, score):
     new_scores = []
     changed = False
@@ -101,6 +111,7 @@ def score_update(scores, score):
     return new_scores
 
 
+# A helper function to write updated scores to the options file
 def write_file(name, scores):
     with open(name + ".txt", 'r') as f:
         text = f.readlines()
@@ -112,6 +123,7 @@ def write_file(name, scores):
         f.writelines(text)
 
 
+# A helper function to write updated volume to the options file
 def write_volume(volume):
     with open("options.txt", 'r') as f:
         text = f.readlines()
