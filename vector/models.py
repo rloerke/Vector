@@ -71,6 +71,11 @@ class Spaceship(GameObject):
         y = approach_zero(y, deceleration)
         self.velocity = (x, y)
 
+    def reverse(self):
+        x = self.velocity - (self.direction * self.acceleration)
+        if x.length() < self.MAX_SPEED:
+            self.velocity -= self.direction * self.acceleration
+
     def shoot(self, volume):
         bullet_velocity = self.direction * self.bullet_speed + self.velocity
         bullet = Bullet(self.position, bullet_velocity)

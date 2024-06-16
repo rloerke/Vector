@@ -9,11 +9,11 @@ from utils import load_sprite, get_random_position, print_text, load_sound, read
 
 class Vector:
     # How close asteroids can spawn to your ship
-    MIN_ASTEROID_DISTANCE = 250
+    MIN_ASTEROID_DISTANCE = 300
 
     def __init__(self):
         self._init_pygame()
-        self.screen = pygame.display.set_mode((800, 600))
+        self.screen = pygame.display.set_mode((1200, 600))
         self.background = load_sprite("space", False)
         self.clock = pygame.time.Clock()
         self.paused = False
@@ -39,19 +39,9 @@ class Vector:
         self.powerups = []
         self.effects = []
         self.effect_timers = []
-        self.spaceship = Spaceship((400, 300), self.bullets.append)
+        self.spaceship = Spaceship((600, 300), self.bullets.append)
 
-        # Generate asteroids at random location, far enough from the spaceship
-        for _ in range(6):
-            while True:
-                position = get_random_position(self.screen)
-                if (
-                    position.distance_to(self.spaceship.position) >
-                    self.MIN_ASTEROID_DISTANCE
-                ):
-                    break
-
-            self.asteroids.append(Asteroid(position, self.asteroids.append))
+        self.gen_asteroids(6)
 
     def main_loop(self):
         while True:
@@ -106,6 +96,8 @@ class Vector:
                 self.spaceship.rotate(clockwise=False)
             if is_key_pressed[pygame.K_UP]:
                 self.spaceship.accelerate()
+            elif is_key_pressed[pygame.K_DOWN]:
+                self.spaceship.reverse()
             else:
                 self.spaceship.decelerate()
 
@@ -164,6 +156,9 @@ class Vector:
                                 self.effect_timers.append(200)
                         self.powerups.remove(powerup)
 
+            if self.spaceship.bullet_speed > 6:
+                self.spaceship.bullet_speed = 6
+
             # Handles asteroids splitting if hit with a bullet
             for bullet in self.bullets[:]:
                 for asteroid in self.asteroids[:]:
@@ -215,6 +210,9 @@ class Vector:
                     del self.effects[x]
                     del self.effect_timers[x]
 
+            if len(self.asteroids) < 8:
+                self.gen_asteroids(3)
+
     def _draw(self):
         if not self.paused:
             # Draw the background and all current game objects
@@ -253,3 +251,16 @@ class Vector:
 
             pygame.display.flip()
             self.clock.tick(60)
+
+    def gen_asteroids(self, num):
+        # Generate asteroids at random location, far enough from the spaceship
+        for _ in range(num):
+            while True:
+                position = get_random_position(self.screen)
+                if (
+                        position.distance_to(self.spaceship.position) >
+                        self.MIN_ASTEROID_DISTANCE
+                ):
+                    break
+
+            self.asteroids.append(Asteroid(position, self.asteroids.append))
